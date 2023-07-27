@@ -37,7 +37,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	if domainData.Stage == 0 {
 		writer.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(writer, "balooProxy: "+domainName+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
+		fmt.Fprintf(writer, "tcpmeow: "+domainName+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
 		return
 	}
 
@@ -85,7 +85,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
 
-	writer.Header().Set("baloo-Proxy", "1.4")
+	writer.Header().Set("meow", "0")
 
 	//Start the suspicious level where the stage currently is
 	susLv := domainData.Stage
@@ -93,14 +93,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//Ratelimit faster if client repeatedly fails the verification challenge (feel free to play around with the threshhold)
 	if ipCountCookie > proxy.FailChallengeRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(writer, "Blocked by BalooProxy.\nYou have been ratelimited. (R1)")
+		fmt.Fprintf(writer, "Blocked by tcpmeow.\nYou have been ratelimited. (R1)")
 		return
 	}
 
 	//Ratelimit spamming Ips (feel free to play around with the threshhold)
 	if ipCount > proxy.IPRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(writer, "Blocked by BalooProxy.\nYou have been ratelimited. (R2)")
+		fmt.Fprintf(writer, "Blocked by tcpmeow.\nYou have been ratelimited. (R2)")
 		return
 	}
 
@@ -108,7 +108,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if browser == "" {
 		if fpCount > proxy.FPRatelimit {
 			writer.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(writer, "Blocked by BalooProxy.\nYou have been ratelimited. (R3)")
+			fmt.Fprintf(writer, "Blocked by tcpmeow.\nYou have been ratelimited. (R3)")
 			return
 		}
 
@@ -121,7 +121,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	forbiddenFp := firewall.ForbiddenFingerprints[tlsFp]
 	if forbiddenFp != "" {
 		writer.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(writer, "Blocked by BalooProxy.\nYour browser %s is not allowed.", forbiddenFp)
+		fmt.Fprintf(writer, "Blocked by tcpmeow.\nYour browser %s is not allowed.", forbiddenFp)
 		return
 	}
 
@@ -186,7 +186,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			encryptedIP = utils.Encrypt(ip+tlsFp+reqUa+strconv.Itoa(proxy.CurrHour), proxy.CaptchaOTP)
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(writer, "Blocked by BalooProxy.\nSuspicious request of level %s (base %d)", susLvStr, domainData.Stage)
+			fmt.Fprintf(writer, "Blocked by tcpmeow.\nSuspicious request of level %s (base %d)", susLvStr, domainData.Stage)
 			return
 		}
 		firewall.CacheIps.Store(ip+susLvStr, encryptedIP)
@@ -236,7 +236,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 				var buf bytes.Buffer
 				if err := png.Encode(&buf, captchaImg); err != nil {
-					fmt.Fprintf(writer, `BalooProxy Error: Failed to encode captcha: %s`, err)
+					fmt.Fprintf(writer, `tcpmeow Error: Failed to encode captcha: %s`, err)
 					return
 				}
 				data := buf.Bytes()
@@ -477,7 +477,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(writer, "Blocked by BalooProxy.\nSuspicious request of level %d (base %d)", susLv, domainData.Stage)
+			fmt.Fprintf(writer, "Blocked by tcpmeow.\nSuspicious request of level %d (base %d)", susLv, domainData.Stage)
 			return
 		}
 	}
@@ -533,7 +533,6 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//Do not remove or modify this. It is required by the license
 	case "/_bProxy/credits":
 		writer.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintf(writer, "BalooProxy; Lightweight http reverse-proxy https://github.com/41Baloo/balooProxy. Protected by GNU GENERAL PUBLIC LICENSE Version 2, June 1991")
 		return
 	}
 
